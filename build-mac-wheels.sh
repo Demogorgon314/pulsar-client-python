@@ -51,6 +51,24 @@ cd $CACHE_DIR
 
 PREFIX=$CACHE_DIR/install
 
+
+
+
+###############################################################################
+if [ ! -f zlib-${ZLIB_VERSION}/.done ]; then
+    echo "Building ZLib"
+    curl -O -L https://zlib.net/zlib-${ZLIB_VERSION}.tar.gz
+    tar xvfz zlib-$ZLIB_VERSION.tar.gz
+    pushd zlib-$ZLIB_VERSION
+      CFLAGS="-fPIC -O3 -arch arm64 -arch x86_64 -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET}" ./configure --prefix=$PREFIX
+      make -j16
+      make install
+      touch .done
+    popd
+else
+    echo "Using cached ZLib"
+fi
+
 ###############################################################################
 for line in "${PYTHON_VERSIONS[@]}"; do
     read -r -a PY <<< "$line"
@@ -86,22 +104,6 @@ for line in "${PYTHON_VERSIONS[@]}"; do
       echo "Using cached Python $PYTHON_VERSION_LONG"
     fi
 done
-
-
-###############################################################################
-if [ ! -f zlib-${ZLIB_VERSION}/.done ]; then
-    echo "Building ZLib"
-    curl -O -L https://zlib.net/zlib-${ZLIB_VERSION}.tar.gz
-    tar xvfz zlib-$ZLIB_VERSION.tar.gz
-    pushd zlib-$ZLIB_VERSION
-      CFLAGS="-fPIC -O3 -arch arm64 -arch x86_64 -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET}" ./configure --prefix=$PREFIX
-      make -j16
-      make install
-      touch .done
-    popd
-else
-    echo "Using cached ZLib"
-fi
 
 ###############################################################################
 if [ ! -f openssl-OpenSSL_${OPENSSL_VERSION}.done ]; then
