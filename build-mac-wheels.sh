@@ -41,7 +41,7 @@ CURL_VERSION=7.61.0
 ROOT_DIR=$(git rev-parse --show-toplevel)
 cd "${ROOT_DIR}"
 
-PULSAR_VERSION=$(cat version.txt | grep pulsar-client-cpp | awk '{print $2}')
+PULSAR_VERSION=$(cat version.txt)
 
 # Compile and cache dependencies
 CACHE_DIR=~/.pulsar-mac-wheels-cache
@@ -248,36 +248,34 @@ else
 fi
 
 ###############################################################################
-if [ ! -f apache-pulsar-${PULSAR_VERSION}-src/.done ]; then
+if [ ! -f pulsar-client-cpp-${PULSAR_VERSION}/.done ]; then
     echo "Building Pulsar C++ client - ${PULSAR_VERSION}"
-    curl -O -L  https://archive.apache.org/dist/pulsar/pulsar-${PULSAR_VERSION}/apache-pulsar-${PULSAR_VERSION}-src.tar.gz
-    rm -rf apache-pulsar-${PULSAR_VERSION}-src/pulsar-client-cpp
-    tar xfz apache-pulsar-${PULSAR_VERSION}-src.tar.gz
-    pushd apache-pulsar-${PULSAR_VERSION}-src
-      pushd pulsar-client-cpp
-          ARCHS='arm64;x86_64'
+    curl -O -L  https://github.com/apache/pulsar-client-cpp/archive/refs/tags/v${PULSAR_VERSION}.tar.gz
+    rm -rf v${PULSAR_VERSION}
+    tar xfz v${PULSAR_VERSION}.tar.gz
+    pushd pulsar-client-cpp-${PULSAR_VERSION}
+      ARCHS='arm64;x86_64'
 
-          chmod +x build-support/merge_archives.sh
-          set -x
-          cmake . \
-                  -DCMAKE_OSX_ARCHITECTURES=${ARCHS} \
-                  -DCMAKE_OSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET} \
-                  -DCMAKE_INSTALL_PREFIX=$PREFIX \
-                  -DCMAKE_BUILD_TYPE=Release \
-                  -DCMAKE_PREFIX_PATH=$PREFIX \
-                  -DCMAKE_CXX_FLAGS=-I$PREFIX/include \
-                  -DBoost_INCLUDE_DIR=$CACHE_DIR/boost-py-$PYTHON_VERSION/include \
-                  -DBoost_LIBRARY_DIR=$CACHE_DIR/boost-py-$PYTHON_VERSION/lib \
-                  -DLINK_STATIC=OFF \
-                  -DBUILD_TESTS=OFF \
-                  -DBUILD_PYTHON_WRAPPER=OFF \
-                  -DBUILD_WIRESHARK=OFF \
-                  -DBUILD_DYNAMIC_LIB=OFF \
-                  -DBUILD_STATIC_LIB=ON \
-                  -DPROTOC_PATH=$PREFIX/bin/protoc
+                chmod +x build-support/merge_archives.sh
+                set -x
+                cmake . \
+                        -DCMAKE_OSX_ARCHITECTURES=${ARCHS} \
+                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET} \
+                        -DCMAKE_INSTALL_PREFIX=$PREFIX \
+                        -DCMAKE_BUILD_TYPE=Release \
+                        -DCMAKE_PREFIX_PATH=$PREFIX \
+                        -DCMAKE_CXX_FLAGS=-I$PREFIX/include \
+                        -DBoost_INCLUDE_DIR=$CACHE_DIR/boost-py-$PYTHON_VERSION/include \
+                        -DBoost_LIBRARY_DIR=$CACHE_DIR/boost-py-$PYTHON_VERSION/lib \
+                        -DLINK_STATIC=OFF \
+                        -DBUILD_TESTS=OFF \
+                        -DBUILD_PYTHON_WRAPPER=OFF \
+                        -DBUILD_WIRESHARK=OFF \
+                        -DBUILD_DYNAMIC_LIB=OFF \
+                        -DBUILD_STATIC_LIB=ON \
+                        -DPROTOC_PATH=$PREFIX/bin/protoc
 
-          make -j16 install
-      popd
+                make -j16 install
       touch .done
     popd
 else
@@ -324,6 +322,7 @@ for line in "${PYTHON_VERSIONS[@]}"; do
             -DBoost_INCLUDE_DIR=$CACHE_DIR/boost-py-$PYTHON_VERSION/include \
             -DBoost_LIBRARY_DIR=$CACHE_DIR/boost-py-$PYTHON_VERSION/lib \
             -DPython3_INCLUDE_DIR=$PY_INCLUDE_DIR \
+            -DPULSAR_LIBRARY=${CACHE_DIR}/pulsar-client-cpp-${PULSAR_VERSION}/lib \
             -DPython3_LIBRARY=$PY_PREFIX/lib/libpython${PYTHON_VERSION}.dylib \
             -DPULSAR_INCLUDE=${PREFIX}/include
 
