@@ -207,7 +207,7 @@ if [ ! -f zstd-${ZSTD_VERSION}/.done ]; then
     curl -O -L https://github.com/facebook/zstd/releases/download/v${ZSTD_VERSION}/zstd-${ZSTD_VERSION}.tar.gz
     tar xvfz zstd-${ZSTD_VERSION}.tar.gz
     pushd zstd-${ZSTD_VERSION}
-      mkdir builddir
+      mkdir -p builddir
       pushd builddir
         cmake ../build/cmake \
               -DCMAKE_OSX_ARCHITECTURES=${ARCHS} \
