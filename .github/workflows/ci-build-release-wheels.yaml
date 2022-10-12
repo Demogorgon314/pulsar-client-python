@@ -18,12 +18,17 @@
 #
 
 name: Build release wheels
+#on:
+#  push:
+#    tags:
+#      - '*'
+#    branches:
+#      - '*'
 on:
+  pull_request:
+    branches: ['main']
   push:
-    tags:
-      - '*'
-    branches:
-      - '*'
+    branches: ['*']
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -142,4 +147,3 @@ jobs:
         with:
           name: wheel-mac-py${{matrix.py.version}}
           path: dist/*.whl
-
