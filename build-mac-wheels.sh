@@ -60,9 +60,17 @@ if [ ! -f zlib-${ZLIB_VERSION}/.done ]; then
     curl -O -L https://zlib.net/zlib-${ZLIB_VERSION}.tar.gz
     tar xvfz zlib-$ZLIB_VERSION.tar.gz
     pushd zlib-$ZLIB_VERSION
-      CFLAGS="-fPIC -O3 -arch arm64 -arch x86_64 -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET}" ./configure --prefix=$PREFIX
-      make -j16
-      make install
+      mkdir builddir
+      pushd builddir
+        cmake ../build/cmake \
+              -DCMAKE_OSX_ARCHITECTURES=${ARCHS} \
+              -DCMAKE_OSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET} \
+              -DCMAKE_INSTALL_PREFIX=$PREFIX \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_CXX_FLAGS=-I$PREFIX/include
+        make -j16
+        make install
+      popd
       touch .done
     popd
 else
